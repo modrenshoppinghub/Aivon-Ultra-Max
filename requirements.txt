@@ -1,5 +1,5 @@
 streamlit
 crewai
 langchain-community
-duckduckgo-search
+duckduckgo-search==6.3.3
 groq
