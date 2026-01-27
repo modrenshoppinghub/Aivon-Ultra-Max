@@ -67,7 +67,8 @@ if execute_btn:
         
         with st.status("🛠️ Initializing Neural Agents...", expanded=True) as status:
             # SEARCH TOOL
-            search_tool = DuckDuckGoSearchResults()
+            from langchain_community.tools import DuckDuckGoSearchRun
+search_tool = DuckDuckGoSearchRun()
             
             # PHASE 1: FREE IMAGE ENGINE
             st.write("🖼️ Generating Cinematic Visual Asset...")
@@ -123,4 +124,5 @@ with p_col2:
     st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul></div>', unsafe_allow_html=True)
 
 with p_col3:
+
     st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p><ul><li>Full Video Automation</li><li>Priority Support</li></ul></div>', unsafe_allow_html=True)
