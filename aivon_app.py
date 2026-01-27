@@ -20,6 +20,7 @@ st.markdown("""
         border: 1px solid #00f2ff; 
         box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
         margin-top: 20px;
+        white-space: pre-wrap;
     }
     .stButton>button {
         background: linear-gradient(45deg, #00f2ff, #7000ff);
@@ -27,7 +28,7 @@ st.markdown("""
         width: 100%; transition: 0.3s;
     }
     .stButton>button:hover { transform: scale(1.02); box-shadow: 0 0 20px #00f2ff; }
-    .price-tag { background: #1a1a1a; padding: 10px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; }
+    .price-tag { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -52,7 +53,7 @@ st.markdown('<div class="sub-title">The Future of AI-Driven Business Intelligenc
 
 col_main = st.columns([1, 4, 1])
 with col_main[1]:
-    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a global trend or business idea...")
+    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a global trend (e.g., Future of Mars Colonies 2050)")
     execute_btn = st.button("🚀 EXECUTE FULL MULTIMEDIA GENERATION")
 
 if execute_btn:
@@ -61,8 +62,12 @@ if execute_btn:
     elif not topic:
         st.warning("Please define a Strategic Vision first.")
     else:
+        # Essential environment variables for CrewAI + Groq
         os.environ["GROQ_API_KEY"] = groq_api
-        
+        os.environ["OPENAI_API_KEY"] = groq_api
+        os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
+        os.environ["OPENAI_MODEL_NAME"] = "llama-3.3-70b-versatile"
+
         try:
             with st.status("🛠️ Initializing Neural Agents...", expanded=True) as status:
                 # PHASE 1: Visual Generation
@@ -71,23 +76,25 @@ if execute_btn:
                 image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&nologo=true"
                 st.image(image_url, caption=f"AI Visual for: {topic}", use_container_width=True)
                 
-                # PHASE 2: AI Crew (Intelligence & Creative)
+                # PHASE 2: AI Crew Setup
                 researcher = Agent(
                     role='Intelligence Officer',
                     goal=f'Analyze {topic} for 2026 market trends',
                     backstory="Ex-CIA data analyst specializing in future tech trends.",
-                    llm="groq/llama-3.3-70b-versatile"
+                    llm="llama-3.3-70b-versatile",
+                    allow_delegation=False
                 )
 
                 director = Agent(
                     role='Creative Director',
                     goal=f'Create a high-conversion video script for {topic}',
                     backstory="Award-winning filmmaker focused on viral AI content.",
-                    llm="groq/llama-3.3-70b-versatile"
+                    llm="llama-3.3-70b-versatile",
+                    allow_delegation=False
                 )
 
                 task1 = Task(description=f"Research 3 breakthrough insights for {topic}.", expected_output="An Intelligence Brief.", agent=researcher)
-                task2 = Task(description="Write a 60-second viral video script with scene descriptions.", expected_output="A full Production Script.", agent=director)
+                task2 = Task(description="Write a 60-second viral video script with scene descriptions.", expected_output="A production-ready Script.", agent=director)
 
                 crew = Crew(agents=[researcher, director], tasks=[task1, task2])
                 result = crew.kickoff()
@@ -109,7 +116,7 @@ if execute_btn:
                 st.success("4K Asset Ready for Export")
 
         except Exception as e:
-            st.error(f"An error occurred: {e}")
+            st.error(f"System Offline: {e}")
 
 # --- 5. PRICING SECTION ---
 st.divider()
