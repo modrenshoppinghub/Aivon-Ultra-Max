@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import urllib.parse
-from crewai import Agent, Task, Crew
+from crewai import Agent, Task, Crew, LLM
 
 # --- SYSTEM SETTINGS ---
 os.environ["OTEL_SDK_DISABLED"] = "true"
@@ -62,26 +62,27 @@ if execute_btn:
     elif not topic:
         st.warning("Please define a Strategic Vision first.")
     else:
-        # Essential environment variables for CrewAI + Groq
-        os.environ["GROQ_API_KEY"] = groq_api
-        os.environ["OPENAI_API_KEY"] = groq_api
-        os.environ["OPENAI_API_BASE"] = "https://api.groq.com/openai/v1"
-        os.environ["OPENAI_MODEL_NAME"] = "llama-3.3-70b-versatile"
-
         try:
             with st.status("🛠️ Initializing Neural Agents...", expanded=True) as status:
-                # PHASE 1: Visual Generation
+                # PHASE 1: Visual Generation (Pollinations AI)
                 st.write("🖼️ Generating Cinematic Visual Asset...")
                 encoded_topic = urllib.parse.quote(topic)
                 image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&nologo=true"
                 st.image(image_url, caption=f"AI Visual for: {topic}", use_container_width=True)
                 
-                # PHASE 2: AI Crew Setup
+                # PHASE 2: Define Groq LLM properly to avoid OpenAI 401 Error
+                # 
+                aivon_llm = LLM(
+                    model="groq/llama-3.3-70b-versatile",
+                    api_key=groq_api
+                )
+                
+                # PHASE 3: AI Agents Setup
                 researcher = Agent(
                     role='Intelligence Officer',
                     goal=f'Analyze {topic} for 2026 market trends',
                     backstory="Ex-CIA data analyst specializing in future tech trends.",
-                    llm="llama-3.3-70b-versatile",
+                    llm=aivon_llm,
                     allow_delegation=False
                 )
 
@@ -89,7 +90,7 @@ if execute_btn:
                     role='Creative Director',
                     goal=f'Create a high-conversion video script for {topic}',
                     backstory="Award-winning filmmaker focused on viral AI content.",
-                    llm="llama-3.3-70b-versatile",
+                    llm=aivon_llm,
                     allow_delegation=False
                 )
 
@@ -116,7 +117,7 @@ if execute_btn:
                 st.success("4K Asset Ready for Export")
 
         except Exception as e:
-            st.error(f"System Offline: {e}")
+            st.error(f"System Error: {e}")
 
 # --- 5. PRICING SECTION ---
 st.divider()
