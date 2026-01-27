@@ -28,11 +28,12 @@ st.markdown("""
         width: 100%; transition: 0.3s;
     }
     .stButton>button:hover { transform: scale(1.02); box-shadow: 0 0 20px #00f2ff; }
-    .price-tag { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; }
+    .price-tag { background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; min-height: 250px; }
+    .pay-link { color: #00f2ff; font-weight: bold; text-decoration: none; border: 1px solid #00f2ff; padding: 5px 10px; border-radius: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. SIDEBAR ---
+# --- 2. SIDEBAR (Core & Payments) ---
 with st.sidebar:
     st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core</h1>", unsafe_allow_html=True)
     st.write("● Status: **Online**")
@@ -44,8 +45,11 @@ with st.sidebar:
     st.divider()
     st.markdown("### 💰 Subscription Status")
     st.info("Current Plan: **FREE TRIAL**")
+    
+    # Yahan apna Stripe Payment link paste karein
+    stripe_url = "https://buy.stripe.com/test_demo_link" 
     if st.button("⭐ Upgrade to Pro"):
-        st.toast("Redirecting to Payment Gateway...")
+        st.markdown(f'<p style="text-align:center;"><a href="{stripe_url}" target="_blank" class="pay-link">Click here to Pay Securely</a></p>', unsafe_allow_html=True)
 
 # --- 3. MAIN DASHBOARD ---
 st.markdown('<div class="main-title">AIVON ULTRA MAX 2026</div>', unsafe_allow_html=True)
@@ -53,7 +57,7 @@ st.markdown('<div class="sub-title">The Future of AI-Driven Business Intelligenc
 
 col_main = st.columns([1, 4, 1])
 with col_main[1]:
-    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a global trend (e.g., Future of Mars Colonies 2050)")
+    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a trend (e.g., AI-Driven Tourism 2026)")
     execute_btn = st.button("🚀 EXECUTE FULL MULTIMEDIA GENERATION")
 
 if execute_btn:
@@ -64,14 +68,13 @@ if execute_btn:
     else:
         try:
             with st.status("🛠️ Initializing Neural Agents...", expanded=True) as status:
-                # PHASE 1: Visual Generation (Pollinations AI)
+                # PHASE 1: Visual Generation
                 st.write("🖼️ Generating Cinematic Visual Asset...")
                 encoded_topic = urllib.parse.quote(topic)
                 image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&nologo=true"
                 st.image(image_url, caption=f"AI Visual for: {topic}", use_container_width=True)
                 
-                # PHASE 2: Define Groq LLM properly to avoid OpenAI 401 Error
-                # 
+                # PHASE 2: LLM Configuration
                 aivon_llm = LLM(
                     model="groq/llama-3.3-70b-versatile",
                     api_key=groq_api
@@ -126,7 +129,9 @@ p_col1, p_col2, p_col3 = st.columns(3)
 
 with p_col1:
     st.markdown('<div class="price-tag"><h3>Basic</h3><p>FREE</p><ul><li>3 Daily Researches</li><li>Standard Images</li></ul></div>', unsafe_allow_html=True)
+
 with p_col2:
-    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul><br><small>Pay via Stripe Sidebar</small></div>', unsafe_allow_html=True)
+
 with p_col3:
     st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p><ul><li>Full Automation</li><li>Priority Support</li></ul></div>', unsafe_allow_html=True)
