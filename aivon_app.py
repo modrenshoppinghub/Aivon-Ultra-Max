@@ -2,7 +2,6 @@ import streamlit as st
 import os
 import urllib.parse
 from crewai import Agent, Task, Crew
-from langchain_community.tools import DuckDuckGoSearchRun
 
 # --- SYSTEM SETTINGS ---
 os.environ["OTEL_SDK_DISABLED"] = "true"
@@ -53,69 +52,73 @@ st.markdown('<div class="sub-title">The Future of AI-Driven Business Intelligenc
 
 col_main = st.columns([1, 4, 1])
 with col_main[1]:
-    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a trend...")
+    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a global trend or business idea...")
     execute_btn = st.button("🚀 EXECUTE FULL MULTIMEDIA GENERATION")
 
 if execute_btn:
     if not groq_api:
-        st.error("Please provide Groq API Key in the sidebar.")
+        st.error("Intelligence Core Offline: Please provide Groq API Key in the sidebar.")
     elif not topic:
         st.warning("Please define a Strategic Vision first.")
     else:
         os.environ["GROQ_API_KEY"] = groq_api
         
-        # All logic must be indented correctly under 'else'
-        with st.status("🛠️ Initializing Neural Agents...", expanded=True) as status:
-            # Step 1: Image Generation
-            st.write("🖼️ Generating Cinematic Visual Asset...")
-            encoded_topic = urllib.parse.quote(topic)
-            image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&nologo=true"
-            st.image(image_url, caption=f"AI Visual for: {topic}", use_container_width=True)
-            
-            # Step 2: Search Tool & AI Crew
-            search_tool = DuckDuckGoSearchRun()
-            
-            researcher = Agent(
-                role='Intelligence Officer',
-                goal=f'Analyze {topic} for 2026 market trends',
-                backstory="Ex-CIA data analyst specializing in future tech trends.",
-                tools=[search_tool], llm="groq/llama-3.3-70b-versatile"
-            )
+        try:
+            with st.status("🛠️ Initializing Neural Agents...", expanded=True) as status:
+                # PHASE 1: Visual Generation
+                st.write("🖼️ Generating Cinematic Visual Asset...")
+                encoded_topic = urllib.parse.quote(topic)
+                image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&nologo=true"
+                st.image(image_url, caption=f"AI Visual for: {topic}", use_container_width=True)
+                
+                # PHASE 2: AI Crew (Intelligence & Creative)
+                researcher = Agent(
+                    role='Intelligence Officer',
+                    goal=f'Analyze {topic} for 2026 market trends',
+                    backstory="Ex-CIA data analyst specializing in future tech trends.",
+                    llm="groq/llama-3.3-70b-versatile"
+                )
 
-            director = Agent(
-                role='Creative Director',
-                goal=f'Create a high-conversion video script for {topic}',
-                backstory="Award-winning filmmaker focused on viral AI content.",
-                llm="groq/llama-3.3-70b-versatile"
-            )
+                director = Agent(
+                    role='Creative Director',
+                    goal=f'Create a high-conversion video script for {topic}',
+                    backstory="Award-winning filmmaker focused on viral AI content.",
+                    llm="groq/llama-3.3-70b-versatile"
+                )
 
-            task1 = Task(description=f"Research 3 insights for {topic}.", expected_output="Brief.", agent=researcher)
-            task2 = Task(description="Write a viral video script.", expected_output="Script.", agent=director)
+                task1 = Task(description=f"Research 3 breakthrough insights for {topic}.", expected_output="An Intelligence Brief.", agent=researcher)
+                task2 = Task(description="Write a 60-second viral video script with scene descriptions.", expected_output="A full Production Script.", agent=director)
 
-            crew = Crew(agents=[researcher, director], tasks=[task1, task2])
-            result = crew.kickoff()
-            
-            status.update(label="✅ Analysis Complete!", state="complete")
+                crew = Crew(agents=[researcher, director], tasks=[task1, task2])
+                result = crew.kickoff()
+                
+                status.update(label="✅ Analysis Complete!", state="complete")
 
-        # --- 4. DISPLAY RESULTS ---
-        st.divider()
-        res_col1, res_col2 = st.columns([1.5, 1])
-        with res_col1:
-            st.markdown("### 🎬 Production Storyboard")
-            st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
-            st.download_button("📥 Download Report", data=str(result.raw), file_name="Aivon_Report.txt")
-        with res_col2:
-            st.markdown("### 🖼️ Neural Visual")
-            st.image(image_url, use_container_width=True)
-            st.success("4K Asset Ready")
+            # --- 4. DISPLAY RESULTS ---
+            st.divider()
+            res_col1, res_col2 = st.columns([1.5, 1])
 
-# --- 5. PRICING ---
+            with res_col1:
+                st.markdown("### 🎬 Production Storyboard")
+                st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
+                st.download_button("📥 Download Report", data=str(result.raw), file_name="Aivon_Report.txt")
+
+            with res_col2:
+                st.markdown("### 🖼️ Neural Visual")
+                st.image(image_url, caption="Final AI Asset", use_container_width=True)
+                st.success("4K Asset Ready for Export")
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+
+# --- 5. PRICING SECTION ---
 st.divider()
 st.markdown("<h2 style='text-align: center;'>💼 Enterprise Monetization</h2>", unsafe_allow_html=True)
 p_col1, p_col2, p_col3 = st.columns(3)
+
 with p_col1:
-    st.markdown('<div class="price-tag"><h3>Basic</h3><p>FREE</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag"><h3>Basic</h3><p>FREE</p><ul><li>3 Daily Researches</li><li>Standard Images</li></ul></div>', unsafe_allow_html=True)
 with p_col2:
-    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul></div>', unsafe_allow_html=True)
 with p_col3:
-    st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p><ul><li>Full Automation</li><li>Priority Support</li></ul></div>', unsafe_allow_html=True)
