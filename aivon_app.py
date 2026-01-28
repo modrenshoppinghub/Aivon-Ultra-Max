@@ -38,13 +38,10 @@ st.markdown("""
         padding: 12px; border-radius: 8px; font-weight: bold;
         text-decoration: none; margin-top: 10px;
     }
-    .price-box {
-        background: #111; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; margin-bottom: 10px;
-    }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. PDF GENERATION FUNCTION (With Your Contact Info) ---
+# --- 2. FIXED PDF GENERATION FUNCTION ---
 def create_pdf(text, topic):
     pdf = FPDF()
     pdf.add_page()
@@ -59,11 +56,12 @@ def create_pdf(text, topic):
     pdf.cell(200, 10, txt=f"Strategy Topic: {topic}", ln=True, align='L')
     pdf.ln(10)
     
-    # Body
+    # Body (Clean text handling for Latin-1)
     pdf.set_font("Arial", "", 12)
-    pdf.multi_cell(0, 10, txt=text)
+    clean_text = text.encode('latin-1', 'replace').decode('latin-1')
+    pdf.multi_cell(0, 10, txt=clean_text)
     
-    # Footer Section (Contact Details)
+    # Footer Section
     pdf.ln(20)
     pdf.set_draw_color(0, 242, 255)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
@@ -71,15 +69,13 @@ def create_pdf(text, topic):
     
     pdf.set_font("Arial", "B", 10)
     pdf.cell(0, 10, txt="Business Contact: msubhanalmani1199@gmail.com | WhatsApp: 03229270513", ln=True, align='C')
-    pdf.set_font("Arial", "I", 9)
-    pdf.cell(0, 5, txt="Generated via Aivon Ultra Max AI Engine", ln=True, align='C')
     
-    return pdf.output(dest='S').encode('latin-1', 'replace')
+    # .output(dest='S') returns bytes directly in modern fpdf2
+    return pdf.output()
 
-# --- 3. SIDEBAR (Contact & Payments) ---
+# --- 3. SIDEBAR ---
 with st.sidebar:
     st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core v3.0</h1>", unsafe_allow_html=True)
-    st.write("● Support: **msubhanalmani1199@gmail.com**")
     st.write("● WhatsApp: **03229270513**")
     st.divider()
     
@@ -92,19 +88,13 @@ with st.sidebar:
     payoneer_url = "https://link.payoneer.com/Token?t=08188776795A4054A03D813DC3816C08&src=prq"
     
     if plan != "Free Trial":
-        st.success(f"Selected: {plan}")
-        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay via Payoneer</a>', unsafe_allow_html=True)
-        st.caption("Payment ke baad screenshot WhatsApp par bhejien.")
-
-    st.divider()
-    if st.button("📱 Install Mobile App"):
-        st.info("Browser menu mein 'Add to Home Screen' select karein.")
+        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay for {plan}</a>', unsafe_allow_html=True)
 
 # --- 4. MAIN DASHBOARD ---
 st.markdown('<div class="main-title">AIVON ULTRA MAX</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">BEYOND ARTIFICIAL INTELLIGENCE</div>', unsafe_allow_html=True)
 
-topic = st.text_input("🚀 Strategic Topic:", placeholder="e.g., Future of AI in Education 2026")
+topic = st.text_input("🚀 Strategic Topic:", placeholder="e.g., Future of AI in Tourism 2026")
 execute_btn = st.button("EXECUTE NEURAL GENERATION")
 
 if execute_btn:
@@ -117,23 +107,14 @@ if execute_btn:
             with st.status("🧠 Processing...", expanded=True) as status:
                 aivon_llm = LLM(model="groq/llama-3.3-70b-versatile", api_key=groq_api)
                 
-                # HD Image Generation
+                # HD Image
                 encoded_topic = urllib.parse.quote(topic)
                 image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1920&height=1080&model=flux&enhance=true"
                 st.image(image_url, caption=f"Neural Vision: {topic}", use_container_width=True)
                 
-                # AI Research Task
-                researcher = Agent(
-                    role='Global Strategist',
-                    goal=f'Create a high-value 2026 intelligence report on {topic}',
-                    backstory="Lead AI Strategist at Aivon Intelligence.",
-                    llm=aivon_llm
-                )
-                task = Task(
-                    description=f"Deep analysis of {topic}. Provide Executive Summary, 3 Insights, and 2026 Recommendations.",
-                    expected_output="Professional Markdown Report.",
-                    agent=researcher
-                )
+                # AI Research
+                researcher = Agent(role='Global Strategist', goal=f'2026 intelligence report on {topic}', backstory="Lead Strategist.", llm=aivon_llm)
+                task = Task(description=f"Deep analysis of {topic}.", expected_output="Markdown Report.", agent=researcher)
                 crew = Crew(agents=[researcher], tasks=[task])
                 result = crew.kickoff()
                 
@@ -142,7 +123,7 @@ if execute_btn:
             st.divider()
             st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
             
-            # PDF Feature
+            # PDF Download Button
             pdf_data = create_pdf(str(result.raw), topic)
             st.download_button(
                 label="📥 Download Professional PDF Report",
@@ -153,7 +134,3 @@ if execute_btn:
 
         except Exception as e:
             st.error(f"Error: {e}")
-
-# --- 5. FOOTER ---
-st.divider()
-st.markdown("<p style='text-align: center; color: #555;'>Aivon Ultra Max © 2026 | Support: 03229270513</p>", unsafe_allow_html=True)
