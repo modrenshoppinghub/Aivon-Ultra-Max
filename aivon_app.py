@@ -35,8 +35,11 @@ st.markdown("""
     .pay-btn {
         display: block; width: 100%; text-align: center;
         background: #00f2ff; color: #000 !important; 
-        padding: 15px; border-radius: 10px; font-weight: bold;
-        text-decoration: none; margin-top: 15px;
+        padding: 12px; border-radius: 8px; font-weight: bold;
+        text-decoration: none; margin-top: 10px;
+    }
+    .price-box {
+        background: #111; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; margin-bottom: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -55,84 +58,98 @@ def create_pdf(text, topic):
     pdf.multi_cell(0, 10, txt=text)
     return pdf.output(dest='S').encode('latin-1')
 
-# --- 3. SIDEBAR (Advanced Controls) ---
+# --- 3. SIDEBAR (Payments & Control) ---
 with st.sidebar:
     st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core v3.0</h1>", unsafe_allow_html=True)
-    st.write("● Engine: **Neural 70B**")
-    st.write("● Status: **Global Ready**")
+    st.write("● Status: **Enterprise Ready**")
     st.divider()
     
     groq_api = st.text_input("🔑 Enterprise API Key", type="password")
     
     st.divider()
-    st.markdown("### 💳 Unlock Full Features")
-    payoneer_url = "https://link.payoneer.com/Token?t=08188776795A4054A03D813DC3816C08&src=prq"
-    st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">Activate Enterprise ($100)</a>', unsafe_allow_html=True)
+    st.markdown("### 💎 Choose Your Plan")
     
+    # Updated Cheaper Pricing Tiers
+    plan = st.selectbox("Select Tier:", ["Basic (Free Trial)", "Starter ($10)", "Professional ($25)", "Enterprise ($50)"])
+    
+    # Payoneer Link (User can pay any amount via your request link)
+    payoneer_url = "https://link.payoneer.com/Token?t=08188776795A4054A03D813DC3816C08&src=prq"
+    
+    if plan == "Basic (Free Trial)":
+        st.info("Limited to 2 researches per day.")
+    else:
+        st.success(f"Unlock {plan} features now!")
+        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay for {plan}</a>', unsafe_allow_html=True)
+        st.caption("Payment ke baad screenshot support ko bhejien.")
+
     st.divider()
     if st.button("📱 Install Mobile App"):
-        st.info("Browser menu mein 'Install App' ya 'Add to Home Screen' par click karein.")
+        st.info("Browser menu se 'Add to Home Screen' select karein.")
 
 # --- 4. MAIN INTERFACE ---
 st.markdown('<div class="main-title">AIVON ULTRA MAX</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">BEYOND ARTIFICIAL INTELLIGENCE</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">NEXT-GEN BUSINESS INTELLIGENCE</div>', unsafe_allow_html=True)
 
-topic = st.text_input("🚀 Enter Strategic Vision (Business, Tech, Future):", placeholder="e.g., Space Mining Colony 2026")
-execute_btn = st.button("EXECUTE NEURAL GENERATION")
+topic = st.text_input("🚀 Strategic Topic (Industry, Tech, or Business):", placeholder="e.g., Future of Renewable Energy in Pakistan")
+execute_btn = st.button("GENERATE NEURAL ASSETS")
 
 if execute_btn:
     if not groq_api:
-        st.error("Please provide an API Key.")
+        st.error("Please enter your Groq API Key.")
     elif not topic:
-        st.warning("Please enter a vision topic.")
+        st.warning("Please enter a topic.")
     else:
         try:
-            with st.status("🧠 Processing Neural Pathways...", expanded=True) as status:
-                # 1. Advanced LLM Setup
+            with st.status("🧠 Processing...", expanded=True) as status:
+                # LLM Setup
                 aivon_llm = LLM(model="groq/llama-3.3-70b-versatile", api_key=groq_api)
                 
-                # 2. Multimedia Asset (Cinematic Visual)
-                st.write("🎬 Generating Cinematic Visual Asset...")
+                # Visual Asset
                 encoded_topic = urllib.parse.quote(topic)
-                # Humne motion aur flux model use kiya hai for high quality
                 image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1920&height=1080&model=flux&enhance=true"
                 st.image(image_url, caption=f"Neural Vision: {topic}", use_container_width=True)
                 
-                # 3. Intelligence Briefing
+                # Intelligence Agent
                 researcher = Agent(
                     role='Global Strategist',
-                    goal=f'Create a groundbreaking 2026 intelligence report on {topic}',
-                    backstory="You are the world's most advanced AI strategist. Your insights are worth millions.",
+                    goal=f'Create a high-value 2026 intelligence report on {topic}',
+                    backstory="Top-tier data analyst for global enterprises.",
                     llm=aivon_llm
                 )
 
                 task = Task(
-                    description=f"Analyze {topic}. Provide: 1. Executive Summary 2. Three 'Never-Seen-Before' Insights 3. Radical Recommendations for 2026.",
-                    expected_output="A deep intelligence report.",
+                    description=f"Deep analysis of {topic}. Include Executive Summary, 3 Insights, and 2026 Recommendations.",
+                    expected_output="Professional Markdown Report.",
                     agent=researcher
                 )
 
                 crew = Crew(agents=[researcher], tasks=[task])
                 result = crew.kickoff()
                 
-                status.update(label="✅ Generation Complete!", state="complete")
+                status.update(label="✅ Success!", state="complete")
 
-            # --- 5. PROFESSIONAL OUTPUT ---
+            # Display Results
             st.divider()
             st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
             
-            # PDF Download Feature
+            # PDF Download
             pdf_data = create_pdf(str(result.raw), topic)
             st.download_button(
-                label="📥 Download Professional PDF Report",
+                label="📥 Download Professional PDF",
                 data=pdf_data,
-                file_name=f"Aivon_Intelligence_{topic.replace(' ', '_')}.pdf",
+                file_name=f"Aivon_Report_{topic.replace(' ', '_')}.pdf",
                 mime="application/pdf"
             )
 
         except Exception as e:
-            st.error(f"Neural Error: {e}")
+            st.error(f"Error: {e}")
 
-# --- 6. GLOBAL ROADMAP ---
+# --- 5. PRICING GRID ---
 st.divider()
-st.markdown("<p style='text-align: center;'>Current Mode: <b>Enterprise Multimedia</b> | Future: <b>Real-time Video Synthesis (Soon)</b></p>", unsafe_allow_html=True)
+p_col1, p_col2, p_col3 = st.columns(3)
+with p_col1:
+    st.markdown('<div class="price-box"><h3>Starter</h3><p>$10</p><p>Standard Research</p></div>', unsafe_allow_html=True)
+with p_col2:
+    st.markdown('<div class="price-box" style="border-color:#00f2ff"><h3>Pro</h3><p>$25</p><p>HD Multimedia</p></div>', unsafe_allow_html=True)
+with p_col3:
+    st.markdown('<div class="price-box"><h3>Enterprise</h3><p>$50</p><p>Full PDF Access</p></div>', unsafe_allow_html=True)
