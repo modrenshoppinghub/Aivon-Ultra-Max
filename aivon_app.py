@@ -2,117 +2,113 @@ import streamlit as st
 import os
 import urllib.parse
 from crewai import Agent, Task, Crew, LLM
+from fpdf import FPDF
 
 # --- SYSTEM SETTINGS ---
 os.environ["OTEL_SDK_DISABLED"] = "true"
 
 # --- 1. PWA & PRO UI DESIGN ---
 st.set_page_config(
-    page_title="Aivon Ultra Max | AI Business Engine", 
+    page_title="Aivon Ultra Max | Global AI Engine", 
     layout="wide", 
     page_icon="💠"
 )
 
 st.markdown("""
-    <head>
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <link rel="apple-touch-icon" href="https://pollinations.ai/p/ai_icon?width=180&height=180">
-    </head>
     <style>
     .stApp { background-color: #050505; color: #ffffff; }
-    .main-title { text-align: center; color: #00f2ff; font-size: 45px; font-weight: bold; text-shadow: 0 0 15px #00f2ff; }
-    .sub-title { text-align: center; color: #7000ff; font-size: 18px; margin-bottom: 25px; }
+    .main-title { text-align: center; color: #00f2ff; font-size: 50px; font-weight: bold; text-shadow: 0 0 20px #00f2ff; }
+    .sub-title { text-align: center; color: #7000ff; font-size: 20px; margin-bottom: 30px; letter-spacing: 2px; }
     .report-card { 
-        background: rgba(255, 255, 255, 0.05); 
-        padding: 20px; border-radius: 15px; 
-        border: 1px solid #00f2ff; 
-        box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-        white-space: pre-wrap;
-        font-family: 'Courier New', Courier, monospace;
+        background: rgba(10, 10, 10, 0.9); 
+        padding: 30px; border-radius: 20px; 
+        border: 2px solid #00f2ff; 
+        box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+        color: #e0e0e0; line-height: 1.6;
     }
     .stButton>button {
-        background: linear-gradient(45deg, #00f2ff, #7000ff);
-        color: white; border: none; padding: 15px; font-weight: bold; border-radius: 10px;
-        width: 100%; transition: 0.3s;
+        background: linear-gradient(90deg, #00f2ff, #7000ff);
+        color: white; border: none; padding: 20px; font-size: 18px; font-weight: bold; border-radius: 15px;
+        width: 100%; transition: 0.5s; cursor: pointer;
     }
+    .stButton>button:hover { transform: scale(1.02); box-shadow: 0 0 40px #7000ff; }
     .pay-btn {
         display: block; width: 100%; text-align: center;
         background: #00f2ff; color: #000 !important; 
-        padding: 12px; border-radius: 8px; font-weight: bold;
-        text-decoration: none; margin-top: 10px;
+        padding: 15px; border-radius: 10px; font-weight: bold;
+        text-decoration: none; margin-top: 15px;
     }
-    .price-tag { background: #111; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; min-height: 220px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. SIDEBAR (Payments & Navigation) ---
+# --- 2. PDF GENERATION FUNCTION ---
+def create_pdf(text, topic):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 20)
+    pdf.cell(200, 10, txt="AIVON STRATEGIC REPORT 2026", ln=True, align='C')
+    pdf.ln(10)
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(200, 10, txt=f"Topic: {topic}", ln=True, align='L')
+    pdf.ln(5)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, txt=text)
+    return pdf.output(dest='S').encode('latin-1')
+
+# --- 3. SIDEBAR (Advanced Controls) ---
 with st.sidebar:
-    st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core</h1>", unsafe_allow_html=True)
-    st.write("● Status: **Online**")
-    st.write("● App Mode: **Installed**")
+    st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core v3.0</h1>", unsafe_allow_html=True)
+    st.write("● Engine: **Neural 70B**")
+    st.write("● Status: **Global Ready**")
     st.divider()
     
-    groq_api = st.text_input("🔑 Groq API Key", type="password", help="Enter your Groq API key here")
+    groq_api = st.text_input("🔑 Enterprise API Key", type="password")
     
     st.divider()
-    st.markdown("### 💎 Manage Subscription")
-    tier = st.selectbox("Current Tier:", ["Basic (Free)", "Pro ($19/mo)", "Elite ($49/mo)", "Enterprise ($100/Full)"])
-    
-    # Payoneer Enterprise Link
+    st.markdown("### 💳 Unlock Full Features")
     payoneer_url = "https://link.payoneer.com/Token?t=08188776795A4054A03D813DC3816C08&src=prq"
+    st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">Activate Enterprise ($100)</a>', unsafe_allow_html=True)
     
-    if "Enterprise" in tier:
-        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay $100 for Enterprise</a>', unsafe_allow_html=True)
-    elif "Basic" in tier:
-        st.success("Active: Free Trial (Limited)")
-    else:
-        st.info(f"Payment link for {tier} is being generated. Use Enterprise for now.")
-
     st.divider()
-    if st.button("📱 Mobile/Windows Install"):
-        st.info("Chrome/Edge: URL bar mein 'Install' icon par click karein.\n\nMobile: Browser menu se 'Add to Home Screen' select karein.")
+    if st.button("📱 Install Mobile App"):
+        st.info("Browser menu mein 'Install App' ya 'Add to Home Screen' par click karein.")
 
-# --- 3. MAIN DASHBOARD ---
-st.markdown('<div class="main-title">AIVON ULTRA MAX 2026</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Automated Business Intelligence & Multimedia Engine</div>', unsafe_allow_html=True)
+# --- 4. MAIN INTERFACE ---
+st.markdown('<div class="main-title">AIVON ULTRA MAX</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">BEYOND ARTIFICIAL INTELLIGENCE</div>', unsafe_allow_html=True)
 
-col_input, col_action = st.columns([4, 1])
-with col_input:
-    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a trend or industry (e.g., Future of AI in Space)")
-with col_action:
-    st.write("##")
-    execute_btn = st.button("🚀 EXECUTE")
+topic = st.text_input("🚀 Enter Strategic Vision (Business, Tech, Future):", placeholder="e.g., Space Mining Colony 2026")
+execute_btn = st.button("EXECUTE NEURAL GENERATION")
 
 if execute_btn:
     if not groq_api:
-        st.error("Error: Please provide your Groq API Key in the sidebar.")
+        st.error("Please provide an API Key.")
     elif not topic:
-        st.warning("Warning: Please enter a topic to analyze.")
+        st.warning("Please enter a vision topic.")
     else:
         try:
-            with st.status("🛠️ Neural Agents Working...", expanded=True) as status:
-                # 1. LLM Setup
+            with st.status("🧠 Processing Neural Pathways...", expanded=True) as status:
+                # 1. Advanced LLM Setup
                 aivon_llm = LLM(model="groq/llama-3.3-70b-versatile", api_key=groq_api)
                 
-                # 2. Visual Generation
-                st.write("🖼️ Creating 4K Cinematic Visual...")
+                # 2. Multimedia Asset (Cinematic Visual)
+                st.write("🎬 Generating Cinematic Visual Asset...")
                 encoded_topic = urllib.parse.quote(topic)
-                image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&seed=42"
-                st.image(image_url, caption=f"Neural Projection: {topic}", use_container_width=True)
+                # Humne motion aur flux model use kiya hai for high quality
+                image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1920&height=1080&model=flux&enhance=true"
+                st.image(image_url, caption=f"Neural Vision: {topic}", use_container_width=True)
                 
-                # 3. Intelligence Agent Logic
+                # 3. Intelligence Briefing
                 researcher = Agent(
-                    role='Intelligence Officer',
-                    goal=f'Generate 3 breakthrough insights for {topic} in 2026',
-                    backstory="Global trend analyst specializing in exponential technologies.",
-                    llm=aivon_llm,
-                    allow_delegation=False
+                    role='Global Strategist',
+                    goal=f'Create a groundbreaking 2026 intelligence report on {topic}',
+                    backstory="You are the world's most advanced AI strategist. Your insights are worth millions.",
+                    llm=aivon_llm
                 )
 
                 task = Task(
-                    description=f"Analyze {topic} and provide a detailed brief including Executive Summary, 3 Insights, and Recommendations.",
-                    expected_output="A structured Intelligence Brief in Markdown.",
+                    description=f"Analyze {topic}. Provide: 1. Executive Summary 2. Three 'Never-Seen-Before' Insights 3. Radical Recommendations for 2026.",
+                    expected_output="A deep intelligence report.",
                     agent=researcher
                 )
 
@@ -121,32 +117,22 @@ if execute_btn:
                 
                 status.update(label="✅ Generation Complete!", state="complete")
 
-            # --- 4. DISPLAY RESULTS & DOWNLOAD ---
+            # --- 5. PROFESSIONAL OUTPUT ---
             st.divider()
-            st.markdown("### 🎬 Strategic Intelligence Report")
             st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
             
-            # PDF/Text Download Button
+            # PDF Download Feature
+            pdf_data = create_pdf(str(result.raw), topic)
             st.download_button(
-                label="📥 Download This Report",
-                data=str(result.raw),
-                file_name=f"Aivon_Report_{topic.replace(' ', '_')}.txt",
-                mime="text/plain"
+                label="📥 Download Professional PDF Report",
+                data=pdf_data,
+                file_name=f"Aivon_Intelligence_{topic.replace(' ', '_')}.pdf",
+                mime="application/pdf"
             )
 
         except Exception as e:
-            st.error(f"System Error: {e}")
+            st.error(f"Neural Error: {e}")
 
-# --- 5. MONETIZATION GRID ---
+# --- 6. GLOBAL ROADMAP ---
 st.divider()
-st.markdown("<h2 style='text-align: center;'>💼 Enterprise Monetization</h2>", unsafe_allow_html=True)
-p_col1, p_col2, p_col3 = st.columns(3)
-
-with p_col1:
-    st.markdown('<div class="price-tag"><h3>Basic</h3><p>FREE</p><hr><ul><li>3 Daily Researches</li><li>Standard Images</li></ul></div>', unsafe_allow_html=True)
-with p_col2:
-    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><hr><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul></div>', unsafe_allow_html=True)
-with p_col3:
-    st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p><hr><ul><li>Full Automation</li><li>Priority Support</li></ul></div>', unsafe_allow_html=True)
-
-st.markdown("<p style='text-align: center; color: #555;'>Aivon Ultra Max © 2026 - Powered by Neural Intelligence</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Current Mode: <b>Enterprise Multimedia</b> | Future: <b>Real-time Video Synthesis (Soon)</b></p>", unsafe_allow_html=True)
