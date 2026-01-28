@@ -29,6 +29,7 @@ st.markdown("""
         border: 1px solid #00f2ff; 
         box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
         white-space: pre-wrap;
+        font-family: 'Courier New', Courier, monospace;
     }
     .stButton>button {
         background: linear-gradient(45deg, #00f2ff, #7000ff);
@@ -41,91 +42,111 @@ st.markdown("""
         padding: 12px; border-radius: 8px; font-weight: bold;
         text-decoration: none; margin-top: 10px;
     }
-    .price-tag { background: #111; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; min-height: 200px; }
+    .price-tag { background: #111; padding: 15px; border-radius: 10px; border: 1px solid #7000ff; text-align: center; min-height: 220px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. SIDEBAR (Payments & Core) ---
+# --- 2. SIDEBAR (Payments & Navigation) ---
 with st.sidebar:
     st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core</h1>", unsafe_allow_html=True)
     st.write("● Status: **Online**")
-    st.write("● Mode: **Enterprise multimedia**")
+    st.write("● App Mode: **Installed**")
     st.divider()
     
-    groq_api = st.text_input("🔑 Groq API Key", type="password")
+    groq_api = st.text_input("🔑 Groq API Key", type="password", help="Enter your Groq API key here")
     
     st.divider()
-    st.markdown("### 💎 Subscription Plans")
-    plan = st.selectbox("Select your tier:", ["Basic (Free)", "Pro ($19/mo)", "Elite ($49/mo)", "Enterprise ($100/Full)"])
+    st.markdown("### 💎 Manage Subscription")
+    tier = st.selectbox("Current Tier:", ["Basic (Free)", "Pro ($19/mo)", "Elite ($49/mo)", "Enterprise ($100/Full)"])
     
-    # Payoneer Link for Enterprise Plan
+    # Payoneer Enterprise Link
     payoneer_url = "https://link.payoneer.com/Token?t=08188776795A4054A03D813DC3816C08&src=prq"
     
-    if "Enterprise" in plan:
-        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay $100 via Payoneer</a>', unsafe_allow_html=True)
-    elif "Basic" in plan:
-        st.success("Currently active on Free Trial.")
+    if "Enterprise" in tier:
+        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay $100 for Enterprise</a>', unsafe_allow_html=True)
+    elif "Basic" in tier:
+        st.success("Active: Free Trial (Limited)")
     else:
-        st.warning(f"Payment link for {plan} is being updated. Please use Enterprise for instant access.")
-    
-    st.caption("Note: After payment, send your receipt to support for activation.")
-    
+        st.info(f"Payment link for {tier} is being generated. Use Enterprise for now.")
+
     st.divider()
-    if st.button("📱 Install as App"):
-        st.info("On Desktop: Click the 'Install' icon in your browser URL bar. \n\nOn Mobile: Tap '3 dots' -> 'Add to Home Screen'.")
+    if st.button("📱 Mobile/Windows Install"):
+        st.info("Chrome/Edge: URL bar mein 'Install' icon par click karein.\n\nMobile: Browser menu se 'Add to Home Screen' select karein.")
 
 # --- 3. MAIN DASHBOARD ---
 st.markdown('<div class="main-title">AIVON ULTRA MAX 2026</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Multi-Platform Enterprise Business Intelligence</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Automated Business Intelligence & Multimedia Engine</div>', unsafe_allow_html=True)
 
-topic = st.text_input("🌐 Strategic Vision Topic:", placeholder="e.g., Impact of 6G on Global Economy")
-execute_btn = st.button("🚀 EXECUTE FULL MULTIMEDIA GENERATION")
+col_input, col_action = st.columns([4, 1])
+with col_input:
+    topic = st.text_input("🌐 Strategic Vision Input:", placeholder="Enter a trend or industry (e.g., Future of AI in Space)")
+with col_action:
+    st.write("##")
+    execute_btn = st.button("🚀 EXECUTE")
 
 if execute_btn:
     if not groq_api:
-        st.error("Please enter Groq API Key.")
+        st.error("Error: Please provide your Groq API Key in the sidebar.")
     elif not topic:
-        st.warning("Please enter a vision topic.")
+        st.warning("Warning: Please enter a topic to analyze.")
     else:
         try:
-            with st.status("🛠️ System Initializing Agents...", expanded=True) as status:
-                # LLM & Agent Setup
+            with st.status("🛠️ Neural Agents Working...", expanded=True) as status:
+                # 1. LLM Setup
                 aivon_llm = LLM(model="groq/llama-3.3-70b-versatile", api_key=groq_api)
                 
-                # Image Logic
+                # 2. Visual Generation
+                st.write("🖼️ Creating 4K Cinematic Visual...")
                 encoded_topic = urllib.parse.quote(topic)
-                image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux"
-                st.image(image_url, caption=f"Neural Asset: {topic}", use_container_width=True)
+                image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1280&height=720&model=flux&seed=42"
+                st.image(image_url, caption=f"Neural Projection: {topic}", use_container_width=True)
                 
-                # Intelligence Agent
+                # 3. Intelligence Agent Logic
                 researcher = Agent(
-                    role='Intelligence Officer', 
-                    goal=f'Analyze {topic} for 2026 trends', 
-                    backstory="Data Expert", 
-                    llm=aivon_llm
+                    role='Intelligence Officer',
+                    goal=f'Generate 3 breakthrough insights for {topic} in 2026',
+                    backstory="Global trend analyst specializing in exponential technologies.",
+                    llm=aivon_llm,
+                    allow_delegation=False
                 )
-                
-                task = Task(description=f"Generate 3 breakthrough insights for {topic}.", expected_output="A Detailed Intelligence Brief.", agent=researcher)
-                
+
+                task = Task(
+                    description=f"Analyze {topic} and provide a detailed brief including Executive Summary, 3 Insights, and Recommendations.",
+                    expected_output="A structured Intelligence Brief in Markdown.",
+                    agent=researcher
+                )
+
                 crew = Crew(agents=[researcher], tasks=[task])
                 result = crew.kickoff()
                 
-                status.update(label="✅ Analysis Complete!", state="complete")
-            
-            st.markdown("### 🎬 Intelligence Brief Output")
+                status.update(label="✅ Generation Complete!", state="complete")
+
+            # --- 4. DISPLAY RESULTS & DOWNLOAD ---
+            st.divider()
+            st.markdown("### 🎬 Strategic Intelligence Report")
             st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
             
+            # PDF/Text Download Button
+            st.download_button(
+                label="📥 Download This Report",
+                data=str(result.raw),
+                file_name=f"Aivon_Report_{topic.replace(' ', '_')}.txt",
+                mime="text/plain"
+            )
+
         except Exception as e:
             st.error(f"System Error: {e}")
 
-# --- 4. PRICING GRID ---
+# --- 5. MONETIZATION GRID ---
 st.divider()
 st.markdown("<h2 style='text-align: center;'>💼 Enterprise Monetization</h2>", unsafe_allow_html=True)
 p_col1, p_col2, p_col3 = st.columns(3)
 
 with p_col1:
-    st.markdown('<div class="price-tag"><h3>Basic</h3><p>FREE</p><ul><li>3 Daily Researches</li><li>Standard Images</li></ul></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag"><h3>Basic</h3><p>FREE</p><hr><ul><li>3 Daily Researches</li><li>Standard Images</li></ul></div>', unsafe_allow_html=True)
 with p_col2:
-    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag" style="border-color: #00f2ff;"><h3>Pro</h3><p>$19/mo</p><hr><ul><li>Unlimited Research</li><li>4K Neural Visuals</li></ul></div>', unsafe_allow_html=True)
 with p_col3:
-    st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p><ul><li>Full Automation</li><li>Priority Support</li></ul></div>', unsafe_allow_html=True)
+    st.markdown('<div class="price-tag"><h3>Elite</h3><p>$49/mo</p><hr><ul><li>Full Automation</li><li>Priority Support</li></ul></div>', unsafe_allow_html=True)
+
+st.markdown("<p style='text-align: center; color: #555;'>Aivon Ultra Max © 2026 - Powered by Neural Intelligence</p>", unsafe_allow_html=True)
