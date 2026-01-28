@@ -44,98 +44,108 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. PDF GENERATION FUNCTION ---
+# --- 2. PDF GENERATION FUNCTION (With Your Contact Info) ---
 def create_pdf(text, topic):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", "B", 20)
-    pdf.cell(200, 10, txt="AIVON STRATEGIC REPORT 2026", ln=True, align='C')
-    pdf.ln(10)
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, txt=f"Topic: {topic}", ln=True, align='L')
+    
+    # Header
+    pdf.set_font("Arial", "B", 22)
+    pdf.cell(200, 15, txt="AIVON STRATEGIC REPORT 2026", ln=True, align='C')
     pdf.ln(5)
+    
+    # Topic
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(200, 10, txt=f"Strategy Topic: {topic}", ln=True, align='L')
+    pdf.ln(10)
+    
+    # Body
     pdf.set_font("Arial", "", 12)
     pdf.multi_cell(0, 10, txt=text)
-    return pdf.output(dest='S').encode('latin-1')
+    
+    # Footer Section (Contact Details)
+    pdf.ln(20)
+    pdf.set_draw_color(0, 242, 255)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(0, 10, txt="Business Contact: msubhanalmani1199@gmail.com | WhatsApp: 03229270513", ln=True, align='C')
+    pdf.set_font("Arial", "I", 9)
+    pdf.cell(0, 5, txt="Generated via Aivon Ultra Max AI Engine", ln=True, align='C')
+    
+    return pdf.output(dest='S').encode('latin-1', 'replace')
 
-# --- 3. SIDEBAR (Payments & Control) ---
+# --- 3. SIDEBAR (Contact & Payments) ---
 with st.sidebar:
     st.markdown("<h1 style='color: #00f2ff;'>💠 Aivon Core v3.0</h1>", unsafe_allow_html=True)
-    st.write("● Status: **Enterprise Ready**")
+    st.write("● Support: **msubhanalmani1199@gmail.com**")
+    st.write("● WhatsApp: **03229270513**")
     st.divider()
     
     groq_api = st.text_input("🔑 Enterprise API Key", type="password")
     
     st.divider()
-    st.markdown("### 💎 Choose Your Plan")
+    st.markdown("### 💎 Manage Subscription")
+    plan = st.selectbox("Select Plan:", ["Free Trial", "Starter ($10)", "Professional ($25)", "Enterprise ($50)"])
     
-    # Updated Cheaper Pricing Tiers
-    plan = st.selectbox("Select Tier:", ["Basic (Free Trial)", "Starter ($10)", "Professional ($25)", "Enterprise ($50)"])
-    
-    # Payoneer Link (User can pay any amount via your request link)
     payoneer_url = "https://link.payoneer.com/Token?t=08188776795A4054A03D813DC3816C08&src=prq"
     
-    if plan == "Basic (Free Trial)":
-        st.info("Limited to 2 researches per day.")
-    else:
-        st.success(f"Unlock {plan} features now!")
-        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay for {plan}</a>', unsafe_allow_html=True)
-        st.caption("Payment ke baad screenshot support ko bhejien.")
+    if plan != "Free Trial":
+        st.success(f"Selected: {plan}")
+        st.markdown(f'<a href="{payoneer_url}" target="_blank" class="pay-btn">💳 Pay via Payoneer</a>', unsafe_allow_html=True)
+        st.caption("Payment ke baad screenshot WhatsApp par bhejien.")
 
     st.divider()
     if st.button("📱 Install Mobile App"):
-        st.info("Browser menu se 'Add to Home Screen' select karein.")
+        st.info("Browser menu mein 'Add to Home Screen' select karein.")
 
-# --- 4. MAIN INTERFACE ---
+# --- 4. MAIN DASHBOARD ---
 st.markdown('<div class="main-title">AIVON ULTRA MAX</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">NEXT-GEN BUSINESS INTELLIGENCE</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">BEYOND ARTIFICIAL INTELLIGENCE</div>', unsafe_allow_html=True)
 
-topic = st.text_input("🚀 Strategic Topic (Industry, Tech, or Business):", placeholder="e.g., Future of Renewable Energy in Pakistan")
-execute_btn = st.button("GENERATE NEURAL ASSETS")
+topic = st.text_input("🚀 Strategic Topic:", placeholder="e.g., Future of AI in Education 2026")
+execute_btn = st.button("EXECUTE NEURAL GENERATION")
 
 if execute_btn:
     if not groq_api:
-        st.error("Please enter your Groq API Key.")
+        st.error("Please enter Groq API Key.")
     elif not topic:
         st.warning("Please enter a topic.")
     else:
         try:
             with st.status("🧠 Processing...", expanded=True) as status:
-                # LLM Setup
                 aivon_llm = LLM(model="groq/llama-3.3-70b-versatile", api_key=groq_api)
                 
-                # Visual Asset
+                # HD Image Generation
                 encoded_topic = urllib.parse.quote(topic)
                 image_url = f"https://pollinations.ai/p/{encoded_topic}?width=1920&height=1080&model=flux&enhance=true"
                 st.image(image_url, caption=f"Neural Vision: {topic}", use_container_width=True)
                 
-                # Intelligence Agent
+                # AI Research Task
                 researcher = Agent(
                     role='Global Strategist',
                     goal=f'Create a high-value 2026 intelligence report on {topic}',
-                    backstory="Top-tier data analyst for global enterprises.",
+                    backstory="Lead AI Strategist at Aivon Intelligence.",
                     llm=aivon_llm
                 )
-
                 task = Task(
-                    description=f"Deep analysis of {topic}. Include Executive Summary, 3 Insights, and 2026 Recommendations.",
+                    description=f"Deep analysis of {topic}. Provide Executive Summary, 3 Insights, and 2026 Recommendations.",
                     expected_output="Professional Markdown Report.",
                     agent=researcher
                 )
-
                 crew = Crew(agents=[researcher], tasks=[task])
                 result = crew.kickoff()
                 
-                status.update(label="✅ Success!", state="complete")
+                status.update(label="✅ Ready!", state="complete")
 
-            # Display Results
             st.divider()
             st.markdown(f'<div class="report-card">{result.raw}</div>', unsafe_allow_html=True)
             
-            # PDF Download
+            # PDF Feature
             pdf_data = create_pdf(str(result.raw), topic)
             st.download_button(
-                label="📥 Download Professional PDF",
+                label="📥 Download Professional PDF Report",
                 data=pdf_data,
                 file_name=f"Aivon_Report_{topic.replace(' ', '_')}.pdf",
                 mime="application/pdf"
@@ -144,12 +154,6 @@ if execute_btn:
         except Exception as e:
             st.error(f"Error: {e}")
 
-# --- 5. PRICING GRID ---
+# --- 5. FOOTER ---
 st.divider()
-p_col1, p_col2, p_col3 = st.columns(3)
-with p_col1:
-    st.markdown('<div class="price-box"><h3>Starter</h3><p>$10</p><p>Standard Research</p></div>', unsafe_allow_html=True)
-with p_col2:
-    st.markdown('<div class="price-box" style="border-color:#00f2ff"><h3>Pro</h3><p>$25</p><p>HD Multimedia</p></div>', unsafe_allow_html=True)
-with p_col3:
-    st.markdown('<div class="price-box"><h3>Enterprise</h3><p>$50</p><p>Full PDF Access</p></div>', unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #555;'>Aivon Ultra Max © 2026 | Support: 03229270513</p>", unsafe_allow_html=True)
