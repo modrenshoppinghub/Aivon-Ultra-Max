@@ -2,3 +2,4 @@ streamlit
 crewai
 groq
 litellm
+fpdf2
